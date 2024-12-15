@@ -30,7 +30,7 @@ public class AliPayConfig {
 
     private String gateway;
 
-    private String returnUrl = "http://localhost:8080/doctorCard";
+    private String returnUrl = "http://localhost:8080/userPerson";
 
     @Override
     public String toString() {

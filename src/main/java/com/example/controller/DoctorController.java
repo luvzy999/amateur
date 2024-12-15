@@ -4,6 +4,7 @@ import com.example.common.Result;
 import com.example.entity.Doctor;
 import com.example.service.DoctorService;
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -12,6 +13,7 @@ import java.util.List;
 /**
  * 医生前端操作接口
  **/
+@Api(tags = "医生前端操作接口")
 @RestController
 @RequestMapping("/doctor")
 public class DoctorController {

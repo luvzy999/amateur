@@ -4,11 +4,13 @@ import com.example.common.Result;
 import com.example.entity.Order;
 import com.example.service.OrderService;
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
 
+@Api(tags = "充值订单操作接口")
 @RestController
 @RequestMapping("/order")
 public class OrderController {

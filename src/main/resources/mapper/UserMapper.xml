@@ -48,7 +48,7 @@
                 <if test="email != null">email,</if>
                 <if test="avatar != null">avatar,</if>
                 <if test="role != null">role,</if>
-                <if test="money != null">account,</if>
+                <if test="money != null">money,</if>
             <if test="create_date != null">create_date</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -60,7 +60,7 @@
                 <if test="email != null">#{email},</if>
                 <if test="avatar != null">#{avatar},</if>
                 <if test="role != null">#{role},</if>
-                <if test="money != null">#{account},</if>
+                <if test="money != null">#{money},</if>
             <if test="create_date != null">#{create_date},</if>
         </trim>
     </insert>
@@ -93,7 +93,7 @@
                 money = #{money},
             </if>
             <if test="create_date != null">
-                money = #{create_date},
+                create_date = #{create_date},
             </if>
         </set>
         where id = #{id} 

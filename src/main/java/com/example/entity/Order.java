@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 支付宝订单信息实体类
@@ -37,4 +38,21 @@ public class Order implements Serializable {
      */
     private String product_code;
 
+    private String user_id;
+
+    private String qr_pay_mode;
+
+    private Date create_date;
+
+    private String trade_state;
+    @Override
+    public String toString() {
+        return "Order{" +
+                "out_trade_no='" + out_trade_no + '\'' +
+                ", subject='" + subject + '\'' +
+                ", total_amount='" + total_amount + '\'' +
+                ", describe='" + body + '\'' +
+                ", product_code='" + product_code + '\'' +
+                '}';
+    }
 }

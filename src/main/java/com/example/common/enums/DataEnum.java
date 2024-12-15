@@ -5,7 +5,8 @@ public enum DataEnum {
     SUBJECT("subject"),
     TOTAL_AMOUNT("total_amount"),
     BODY("body"),
-    PRODUCT_CODE("product_code")
+    PRODUCT_CODE("product_code"),
+    SESSION_KEY("verifyCode")
     ;
 
     DataEnum(String out_trade_no) {

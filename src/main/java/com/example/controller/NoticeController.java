@@ -4,6 +4,7 @@ import com.example.common.Result;
 import com.example.entity.Notice;
 import com.example.service.NoticeService;
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 /**
  * 公告信息表前端操作接口
  **/
+@Api(tags = "公告信息表前端操作接口")
 @RestController
 @RequestMapping("/notice")
 public class NoticeController {

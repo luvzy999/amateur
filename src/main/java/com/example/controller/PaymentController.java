@@ -5,7 +5,10 @@ import com.alipay.api.AlipayApiException;
 import com.example.common.Result;
 import com.example.common.config.pay.AliPayConfig;
 import com.example.entity.AliPayBean;
+import com.example.entity.Order;
 import com.example.service.AliPayService;
+import com.example.service.OrderService;
+import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +21,7 @@ import java.io.IOException;
 /**
  *
  */
+@Api(tags = "支付宝充值操作接口")
 @RestController
 @RequestMapping("/pay")
 public class PaymentController {
@@ -28,15 +32,16 @@ public class PaymentController {
     AliPayService aliPayService;
 
     /**
-     * 生成用户支付页面
-     * @param aliPayBean 订单
+     * 处理用户支付
+     * @param order 订单信息
      * @return
      * @throws AlipayApiException
      * @throws IOException
      */
-    @GetMapping(value = "/alipay",produces = "text/html;charset=UTF-8")
-    public void AliPay(AliPayBean aliPayBean, HttpServletResponse response) throws AlipayApiException, IOException {
-        response.getWriter().write(aliPayService.pay(aliPayBean));
+    @GetMapping(value = "/alipay")
+    public void AliPay(Order order, HttpServletResponse response) throws AlipayApiException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        response.getWriter().write(aliPayService.pay(order));
         response.getWriter().flush();
         response.getWriter().close();
     }
@@ -48,9 +53,9 @@ public class PaymentController {
      * @throws IOException
      */
     @GetMapping("/qrcode")
-    public Result AliPayQR(AliPayBean aliPayBean) throws AlipayApiException {
-        String form = aliPayService.pay(aliPayBean);//生成form
-       return Result.success(form);
+    public Result AliPayQR(Order order) throws AlipayApiException {
+        String form = aliPayService.pay(order);//生成form
+        return Result.success(form);
     }
 
     /**
@@ -59,15 +64,9 @@ public class PaymentController {
      * @throws AlipayApiException
      */
     @PostMapping("/notify")
-    public String callback(HttpServletRequest request){
+    public String callback(HttpServletRequest request) throws AlipayApiException {
         return aliPayService.parseAliPayNotify(request);
     }
 
-    @PostMapping("")
-    public void asyncDataBase(){
-    }
-
 }
-
-
 

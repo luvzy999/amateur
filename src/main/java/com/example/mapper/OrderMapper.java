@@ -1,7 +1,6 @@
 package com.example.mapper;
 
 import com.example.entity.Order;
-import com.example.entity.Plan;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

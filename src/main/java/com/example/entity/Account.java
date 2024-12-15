@@ -21,5 +21,7 @@ public class Account {
     /** 头像 */
     private String avatar;
 
+    private String verifyCode;
+
     private String token;
 }

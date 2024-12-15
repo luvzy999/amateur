@@ -33,12 +33,13 @@ public class AliPayService {
 
     /**
      * 支付网页
-     * @param aliPayBean
+     * @param order
      * @return
      * @throws AlipayApiException
      * @throws IOException
      */
-    public String pay(AliPayBean aliPayBean) throws AlipayApiException{
+    public String pay(Order order) throws AlipayApiException{
+        log.info("======================================================================{}",order.getCreate_date());
         AlipayClient client = new DefaultAlipayClient(aliPayConfig.getGateway(),
                 aliPayConfig.getAppId(),
                 aliPayConfig.getAppPrivateKey(),
@@ -46,14 +47,29 @@ public class AliPayService {
                 aliPayConfig.getCharset(),
                 aliPayConfig.getAlipayPublicKey(),
                 aliPayConfig.getSignType());
-
+        log.info("配置:{}",aliPayConfig.toString());
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
-        request.setReturnUrl(aliPayConfig.getReturnUrl());
-        request.setNotifyUrl(aliPayConfig.getNotifyUrl());//
+
+        AliPayBean aliPayBean = new AliPayBean();
+        aliPayBean.setQr_pay_mode(order.getQr_pay_mode());
+        aliPayBean.setSubject(order.getSubject());
+        aliPayBean.setProduct_code(order.getProduct_code());
+        aliPayBean.setTotal_amount(order.getTotal_amount());
+        aliPayBean.setOut_trade_no(order.getOut_trade_no());
+
         String content = JSON.toJSONString(aliPayBean);
         request.setBizContent(content);
+        request.setReturnUrl(aliPayConfig.getReturnUrl());
+        request.setNotifyUrl(aliPayConfig.getNotifyUrl());//
+
+        log.info("bizContent:{}",content);
         AlipayTradePagePayResponse response = client.pageExecute(request);
-        return response.isSuccess()? response.getBody() : response.getCode() + response.getMsg();
+        String result = response.isSuccess()? response.getBody() : response.getCode() + response.getMsg();
+        log.info("请求结束：{}",result);
+        //将支付信息写入数据库
+        orderService.add(order);
+
+        return result;
     }
 
     /**
@@ -63,6 +79,7 @@ public class AliPayService {
      */
     public String parseAliPayNotify(HttpServletRequest request) {
         Map paramMap = request.getParameterMap();
+        log.info("{}",paramMap.keySet());
         Map<String,String> params = new HashMap<>();
         boolean signVerified;
         for(Iterator iter = paramMap.keySet().iterator();iter.hasNext();){
@@ -75,7 +92,7 @@ public class AliPayService {
             params.put(name, valueStr);
         }
         params.remove("sign_type");
-            try {
+        try {
             signVerified = AlipaySignature.rsaCheckV2(params,
                     aliPayConfig.getAlipayPublicKey(), aliPayConfig.getCharset(),aliPayConfig.getSignType());
         }catch (AlipayApiException e){
@@ -92,22 +109,15 @@ public class AliPayService {
 
         if(trade_status.equals("TRADE_SUCCESS") ||
                 trade_status.equals("TRADE_FINISHED")){
-            //更新订单信息
+            /**
+             *
+             * 验证支付信息
+             */
 
             Order order = new Order();
-            String out_trade_no = params.get("out_trade_no");
-            log.info("out_trade_no===={}",out_trade_no);
-            order.setOut_trade_no(out_trade_no);
-
-            String subject = params.get("subject");
-            log.info("subject===={}",subject);
-            order.setSubject(subject);
-
-            order.setBody(params.get("body"));
-            order.setSubject(params.get("subject"));
-            order.setTotal_amount(params.get("total_amount"));
-            order.setProduct_code(params.get("product_code"));
-            orderService.add(order);
+            order.setOut_trade_no(paramMap.get("out_trade_no").toString());
+            order.setTrade_state("1");//更新订单支付状态
+            orderService.updateById(order);
             return "success";
         }
         return "success";
@@ -115,13 +125,12 @@ public class AliPayService {
 
     /**
      * 账单查询
-     * @param startTime 起始时间
-     * @param endTime 结束时间
-     * @param alipay_aorder_no 订单号
+     * @param startTime 起始时间 格式：2019-01-02 00:00:00
+     * @param endTime 结束时间 格式:同上
      * @return
      * @throws AlipayApiException
      */
-    public String queryBill(String startTime,String endTime,String alipay_aorder_no) throws AlipayApiException {
+    public String queryBillByTime(String startTime,String endTime) throws AlipayApiException {
         AlipayClient client = new DefaultAlipayClient(aliPayConfig.getGateway(),
                 aliPayConfig.getAppId(),
                 aliPayConfig.getAppPrivateKey(),
@@ -131,10 +140,29 @@ public class AliPayService {
                 aliPayConfig.getSignType());
         AlipayDataBillSellQueryRequest request = new AlipayDataBillSellQueryRequest();
         request.setBizContent("{" +
-                "  \"start_time\":"+startTime +
-                "  ,\"end_time\":" +endTime+
-                "  ,\"alipay_aorder_no\":" +alipay_aorder_no+ "}");
+                "  \"start_time\":\"2019-01-01 00:00:00\"," +
+                "  \"end_time\":\"2019-01-02 00:00:00\"," +
+                "  \"alipay_order_no\":\"20190101***\"," +
+                "  \"merchant_order_no\":\"TX***\"," +
+                "  \"store_no\":\"门店1\"," +
+                "  \"page_no\":\"1\"," +
+                "  \"page_size\":\"2000\"" +
+                "}");
         AlipayDataBillSellQueryResponse response = client.pageExecute(request);
         return response.isSuccess()? response.getBody():"查询失败";
+    }
+    public Object queryBillByAlipayNum(String alipay_order_no) throws AlipayApiException {
+        AlipayClient client = new DefaultAlipayClient(aliPayConfig.getGateway(),
+                aliPayConfig.getAppId(),
+                aliPayConfig.getAppPrivateKey(),
+                aliPayConfig.getFormat(),
+                aliPayConfig.getCharset(),
+                aliPayConfig.getAlipayPublicKey(),
+                aliPayConfig.getSignType());
+        AlipayDataBillSellQueryRequest request = new AlipayDataBillSellQueryRequest();
+        request.setBizContent("{" +
+                "  \"alipay_order_no\":"+alipay_order_no+"}");
+        AlipayDataBillSellQueryResponse response = client.pageExecute(request);
+        return response.isSuccess()? response.getDetailList():"查询失败";
     }
 }
